@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -53,7 +54,6 @@ namespace autoShooterr {
         private static Thread t2 = null;
         private static bool lagshot = false;
         private static bool shortlagshot = true;
-
 
 
         private const int WM_NCLBUTTONDOWN = 0xA1;
@@ -452,6 +452,22 @@ namespace autoShooterr {
               }
         }
 
+       // private int centerimagex = 0; //adjust for different screens
+        //private int centerimgy = 0; //adjust for different screens
+        //private int detectionheight = 40;
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            IniFile.Initialize("Settings.ini");
+            try { detectionheight = Int32.Parse(IniFile.Read("detectiony")); }
+            catch { try { IniFile.Write("detectiony", detectionheight.ToString()); } catch { } }
+            try { centerimagex = Int32.Parse(IniFile.Read("x_adjust")); }
+            catch { try { IniFile.Write("x_adjust", centerimagex.ToString()); } catch { } }
+            try { centerimgy = Int32.Parse(IniFile.Read("y_adjust")); }
+            catch { try { IniFile.Write("y_adjust", centerimgy.ToString()); } catch { } }
+            
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
 
         {
@@ -474,4 +490,52 @@ namespace autoShooterr {
     
 
     }
+
+    
+
+    public static class IniFile   // revision 11
+    {
+        static  string Path;
+        static string EXE = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
+
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
+
+        public static void Initialize(string IniPath = null)
+        {
+            Path = new FileInfo(IniPath ?? EXE + ".ini").FullName;
+        }
+
+        public static string Read(string Key, string Section = null)
+        {
+            var RetVal = new StringBuilder(255);
+            GetPrivateProfileString(Section ?? EXE, Key, "", RetVal, 255, Path);
+            return RetVal.ToString();
+        }
+
+        public static  void Write(string Key, string Value, string Section = null)
+        {
+            WritePrivateProfileString(Section ?? EXE, Key, Value, Path);
+        }
+
+        public static  void DeleteKey(string Key, string Section = null)
+        {
+            Write(Key, null, Section ?? EXE);
+        }
+
+        public static  void DeleteSection(string Section = null)
+        {
+            Write(null, null, Section ?? EXE);
+        }
+
+        public static bool KeyExists(string Key, string Section = null)
+        {
+            return Read(Key, Section).Length > 0;
+        }
+    }
+
+
 }
