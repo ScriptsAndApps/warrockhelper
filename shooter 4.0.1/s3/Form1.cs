@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -54,6 +53,7 @@ namespace autoShooterr {
         private static Thread t2 = null;
         private static bool lagshot = false;
         private static bool shortlagshot = true;
+
 
 
         private const int WM_NCLBUTTONDOWN = 0xA1;
@@ -181,9 +181,12 @@ namespace autoShooterr {
             tty.Start();
             InitializeComponent();
         }
-
+        Bitmap bs = new Bitmap(50, 40);
+        Bitmap bs2 = new Bitmap(200, 200);
         private void timer1_Tick(object sender, EventArgs e)
         {
+            if ( !at )
+                return;
             if (lastindex >= 1)
             {
                 if (f2 != null)
@@ -213,7 +216,7 @@ namespace autoShooterr {
            
 
             //take the screenshot for pixels to detect for shooting
-            Bitmap bs = new Bitmap(50, 40);
+        
             try
             {
                 Graphics graphics = Graphics.FromImage(bs as Image);
@@ -222,13 +225,12 @@ namespace autoShooterr {
             catch { }
 
             //take screenshot for showing user / debugging
-            Bitmap bs2 = new Bitmap(200,200);
-            try
-            {
-                Graphics graphics2 = Graphics.FromImage(bs2 as Image);
-                graphics2.CopyFromScreen((screencenterx-98)+centerimagex, screencentery-61 + centerimgy, 0, 0, bs2.Size);
+            if ( debug ) {
+                try {
+                    Graphics graphics2 = Graphics.FromImage(bs2 as Image);
+                    graphics2.CopyFromScreen(( screencenterx - 98 ) + centerimagex, screencentery - 61 + centerimgy, 0, 0, bs2.Size);
+                } catch { }
             }
-            catch { }
 
             // get detection pixel and detect..
             bool detected(int xx)
@@ -265,25 +267,25 @@ namespace autoShooterr {
                 //draw white line above detection
                 bs.SetPixel(bx1 + ii, by1, Color.White);
             }
+            if ( debug ) {
+                //draw crosshair location dot
+                bs2.SetPixel(97, 60, Color.Green);
+                bs2.SetPixel(98, 60, Color.Green);
+                bs2.SetPixel(97, 61, Color.Green);
+                bs2.SetPixel(98, 61, Color.Green);
 
-            //draw crosshair location dot
-            bs2.SetPixel(97, 60, Color.Green);
-            bs2.SetPixel(98, 60, Color.Green);
-            bs2.SetPixel(97, 61, Color.Green);
-            bs2.SetPixel(98, 61, Color.Green);
-
-            //draw detection area red line
-            int add = 20;
-            bs2.SetPixel(94, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(95, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(96, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(97, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(98, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(99, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(100, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(101, 60 + detectionheight + add, Color.Red);
-            bs2.SetPixel(102, 60 + detectionheight + add, Color.Red);
-
+                //draw detection area red line
+                int add = 20;
+                bs2.SetPixel(94, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(95, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(96, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(97, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(98, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(99, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(100, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(101, 60 + detectionheight + add, Color.Red);
+                bs2.SetPixel(102, 60 + detectionheight + add, Color.Red);
+            }
 
             //see if there at least 4 pixels detected combined in both rows. and its not all red (so not a name)
             if (countDetectedPixels + countDetectedPixels2 > 3 && countDetectedPixels + countDetectedPixels2 <= 25)
@@ -292,8 +294,13 @@ namespace autoShooterr {
                 scounter++;
                 TopMost = false;
                 click();
-                pictureBox1.Image = bs;
-                pictureBox2.Image = bs2;
+                Application.DoEvents();
+                //show the screenshot used to trigger 
+                if ( debug ) {
+                    pictureBox1.Image = bs;
+                     pictureBox2.Image = bs2;
+                }
+               //set counter to 0 so it will stay on the screen till timer is over or new screenshot..
                 CC = 0;
                 TopMost = true;
 
@@ -302,8 +309,8 @@ namespace autoShooterr {
             //Dont let the program slow down and output image not every second (needs async)
             if (CC++ >= 200)
             {
-                pictureBox1.Image = bs;
-                pictureBox2.Image = bs2;
+              //  pictureBox1.Image = bs;
+               // pictureBox2.Image = bs2;
                 CC = 100;
                // TopMost = false;
                // TopMost = true;
@@ -342,8 +349,9 @@ namespace autoShooterr {
                     }
                     lastindex = 70;
                 }
-                Thread.Sleep(retje.Next(5,50));
+                Thread.Sleep(retje.Next(3,5));
                 if(lagshot) Thread.Sleep(retje.Next(280, 300));
+                //down ?
                 mouse_event(0x0002, (uint)GetCursorPosition().X * 65535, (uint)GetCursorPosition().Y * 65535, 0, 0);
 
                 /*
@@ -357,7 +365,7 @@ namespace autoShooterr {
                      pictureBox2.Image = bs3;
                 */
                 Thread.Sleep(timeing);
-                
+                //up?
                 mouse_event(0x0004, (uint)GetCursorPosition().X * 65535, (uint)GetCursorPosition().Y * 65535, 0, 0);
                 Thread.Sleep(retje.Next(20,30));
 
@@ -452,20 +460,17 @@ namespace autoShooterr {
               }
         }
 
-       // private int centerimagex = 0; //adjust for different screens
-        //private int centerimgy = 0; //adjust for different screens
-        //private int detectionheight = 40;
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            IniFile.Initialize("Settings.ini");
-            try { detectionheight = Int32.Parse(IniFile.Read("detectiony")); }
-            catch { try { IniFile.Write("detectiony", detectionheight.ToString()); } catch { } }
-            try { centerimagex = Int32.Parse(IniFile.Read("x_adjust")); }
-            catch { try { IniFile.Write("x_adjust", centerimagex.ToString()); } catch { } }
-            try { centerimgy = Int32.Parse(IniFile.Read("y_adjust")); }
-            catch { try { IniFile.Write("y_adjust", centerimgy.ToString()); } catch { } }
-            
+        private void Form1_Load(object sender, EventArgs e) {
+                  int screenx = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
+            this.Location = new Point((screenx-Width)-20, 150);
+    }
+        bool at = true;
+        private void checkBox3_CheckedChanged(object sender, EventArgs e) {
+            at = checkBox3.Checked;
+        }
+        bool debug = false;
+        private void checkBox4_CheckedChanged(object sender, EventArgs e) {
+            debug = checkBox4.Checked;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -490,52 +495,4 @@ namespace autoShooterr {
     
 
     }
-
-    
-
-    public static class IniFile   // revision 11
-    {
-        static  string Path;
-        static string EXE = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
-
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
-
-        public static void Initialize(string IniPath = null)
-        {
-            Path = new FileInfo(IniPath ?? EXE + ".ini").FullName;
-        }
-
-        public static string Read(string Key, string Section = null)
-        {
-            var RetVal = new StringBuilder(255);
-            GetPrivateProfileString(Section ?? EXE, Key, "", RetVal, 255, Path);
-            return RetVal.ToString();
-        }
-
-        public static  void Write(string Key, string Value, string Section = null)
-        {
-            WritePrivateProfileString(Section ?? EXE, Key, Value, Path);
-        }
-
-        public static  void DeleteKey(string Key, string Section = null)
-        {
-            Write(Key, null, Section ?? EXE);
-        }
-
-        public static  void DeleteSection(string Section = null)
-        {
-            Write(null, null, Section ?? EXE);
-        }
-
-        public static bool KeyExists(string Key, string Section = null)
-        {
-            return Read(Key, Section).Length > 0;
-        }
-    }
-
-
 }
