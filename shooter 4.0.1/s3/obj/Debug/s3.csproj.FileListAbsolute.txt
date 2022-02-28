@@ -1,0 +1,12 @@
+D:\shooter3.0\s3\bin\Debug\s3.exe.config
+D:\shooter3.0\s3\bin\Debug\s3.exe
+D:\shooter3.0\s3\bin\Debug\s3.pdb
+D:\shooter3.0\s3\obj\Debug\s3.csproj.AssemblyReference.cache
+D:\shooter3.0\s3\obj\Debug\s3.csproj.SuggestedBindingRedirects.cache
+D:\shooter3.0\s3\obj\Debug\autoShooterr.Form1.resources
+D:\shooter3.0\s3\obj\Debug\autoShooterr.Form2.resources
+D:\shooter3.0\s3\obj\Debug\autoShooterr.Properties.Resources.resources
+D:\shooter3.0\s3\obj\Debug\s3.csproj.GenerateResource.cache
+D:\shooter3.0\s3\obj\Debug\s3.csproj.CoreCompileInputs.cache
+D:\shooter3.0\s3\obj\Debug\s3.exe
+D:\shooter3.0\s3\obj\Debug\s3.pdb
